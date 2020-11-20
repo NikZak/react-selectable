@@ -268,6 +268,7 @@ class SelectableGroup extends Component {
 
 		if (isEnd) {
 			if (typeof onEndSelection === 'function') onEndSelection(currentItems, this.startitem, enditem, e);
+      this.startitem = null
 		} else {
 			if (typeof onSelection === 'function') onSelection(currentItems, this.startitem, enditem, e);
 		}
