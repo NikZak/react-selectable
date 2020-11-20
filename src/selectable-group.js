@@ -18,6 +18,7 @@ class SelectableGroup extends Component {
 			boxWidth: 0,
 			boxHeight: 0
 		};
+    this.startitem = null
 
 		this._mouseDownData = null;
 		this._rect = null;
@@ -90,8 +91,10 @@ class SelectableGroup extends Component {
 			boxWidth: w,
 			boxHeight: h,
 			boxLeft: Math.min(e.pageX - this._rect.x, this._mouseDownData.initialW),
-			boxTop: Math.min(e.pageY - this._rect.y, this._mouseDownData.initialH)
-		});
+			boxTop: Math.min(e.pageY - this._rect.y, this._mouseDownData.initialH),
+      start: {x:this._mouseDownData.initialW + this._rect.x, y:this._mouseDownData.initialH + this._rect.y},
+      end: {x:e.pageX , y:e.pageY
+		}});
 
 		this._throttledSelect(e);
 	}
@@ -210,6 +213,7 @@ class SelectableGroup extends Component {
 		const {tolerance, onSelection, onEndSelection} = this.props;
 
 		const currentItems = [];
+    var enditem = null
 		const _selectbox = findDOMNode(this.refs.selectbox);
 
 		if (!_selectbox) return;
@@ -223,11 +227,49 @@ class SelectableGroup extends Component {
 				currentItems.push(itemData.key);
 			}
 		});
+		for ( const itemData of this._registry  ){
+      
+      
+			if (
+				itemData.domNode
+        && this.startitem === null
+				&& doObjectsCollide(
+				{
+					top: this.state.start.y,
+					left: this.state.start.x,
+					offsetWidth: 0,
+					offsetHeight: 0
+				}
+         , itemData.domNode, tolerance)
+			) {
+				this.startitem = itemData.key;
+        console.log("starttem",this.startitem)
+        break
+			}
+		};
+		for ( const itemData of this._registry  ){
+			if (
+				itemData.domNode
+				&& doObjectsCollide(
+				{
+					top: this.state.end.y,
+					left: this.state.end.x,
+					offsetWidth: 0,
+					offsetHeight: 0
+				}
+         , itemData.domNode, tolerance)
+			) {
+				enditem = itemData.key;
+        console.log("enditem",enditem)
+        break
+			}
+		};
+    
 
 		if (isEnd) {
-			if (typeof onEndSelection === 'function') onEndSelection(currentItems, e);
+			if (typeof onEndSelection === 'function') onEndSelection(currentItems, this.startitem, enditem, e);
 		} else {
-			if (typeof onSelection === 'function') onSelection(currentItems, e);
+			if (typeof onSelection === 'function') onSelection(currentItems, this.startitem, enditem, e);
 		}
 	}
 
